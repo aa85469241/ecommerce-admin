@@ -1,0 +1,172 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mongodb"
+    url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+    ADMIN
+    USER
+}
+
+model User {
+    id             String    @id @default(auto()) @map("_id") @db.ObjectId
+    email          String    @unique
+    emailVerified  DateTime?
+    name           String
+    image          String?
+    hashedPassword String?
+    role           UserRole  @default(ADMIN)
+    createAt       DateTime  @default(now())
+    updateAt       DateTime  @updatedAt
+
+    accounts   Account[]
+    categories Category[]  @relation("UserToCategory")
+    billboards Billboard[] @relation("UserToBillboard")
+    sizes      Size[]      @relation("UserToSize")
+    colors     Color[]     @relation("UserToColor")
+    products   Product[]   @relation("UserToProduct")
+
+    @@map("admin_users")
+}
+
+model Account {
+    id                String  @id @default(auto()) @map("_id") @db.ObjectId
+    userId            String  @db.ObjectId
+    type              String
+    provider          String
+    providerAccountId String
+    refresh_token     String? @db.String
+    access_token      String? @db.String
+    expires_at        Int?
+    token_type        String?
+    scope             String?
+    id_token          String? @db.String
+    session_state     String?
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([provider, providerAccountId])
+    @@map("admin_account")
+}
+
+model Billboard {
+    id         String     @id @default(uuid()) @map("_id")
+    userId     String     @db.ObjectId
+    user       User       @relation("UserToBillboard", fields: [userId], references: [id])
+    label      String
+    image      String
+    Categories Category[]
+    createAt   DateTime   @default(now())
+    updateAt   DateTime   @updatedAt
+
+    @@map("billboards")
+}
+
+model Category {
+    id          String    @id @default(uuid()) @map("_id")
+    userId      String    @db.ObjectId
+    user        User      @relation("UserToCategory", fields: [userId], references: [id])
+    billboardId String
+    billboard   Billboard @relation(fields: [billboardId], references: [id])
+    name        String
+    imageUrl    String
+    products    Product[] @relation("CategoryToProduct")
+    createAt    DateTime  @default(now())
+    updateAt    DateTime  @updatedAt
+
+    @@map("categories")
+}
+
+model Size {
+    id       String   @id @default(uuid()) @map("_id")
+    userId   String   @db.ObjectId
+    user     User     @relation("UserToSize", fields: [userId], references: [id])
+    name     String
+    value    String
+    createAt DateTime @default(now())
+    updateAt DateTime @updatedAt
+
+    @@map("sizes")
+}
+
+model Color {
+    id       String   @id @default(uuid()) @map("_id")
+    userId   String   @db.ObjectId
+    user     User     @relation("UserToColor", fields: [userId], references: [id])
+    name     String
+    value    String
+    createAt DateTime @default(now())
+    updateAt DateTime @updatedAt
+    // productIds String[]
+    // products   Product[] @relation(fields: [productIds], references: [id])
+
+    @@map("colors")
+}
+
+model Product {
+    id         String      @id @default(uuid()) @map("_id")
+    userId     String      @db.ObjectId
+    user       User        @relation("UserToProduct", fields: [userId], references: [id])
+    name       String
+    price      Int
+    isFeatured Boolean
+    createAt   DateTime    @default(now())
+    updateAt   DateTime    @updatedAt
+    categoryId String
+    category   Category    @relation("CategoryToProduct", fields: [categoryId], references: [id])
+    sizes      String[]
+    colors     String[]
+    // colorIds   String[]
+    // colors     Color[]     @relation(fields: [colorIds], references: [id])
+    images     Image[]
+    orderItem  OrderItem[]
+
+    @@map("products")
+}
+
+model Order {
+    id              String      @id @default(auto()) @map("_id") @db.ObjectId
+    orderItems      OrderItem[]
+    isPaid          Boolean     @default(false)
+    purchaser_id    String
+    purchaser_name  String
+    purchaser_email String
+    phone           String      @default("")
+    address         String      @default("")
+    createAt        DateTime    @default(now())
+    updateAt        DateTime    @updatedAt
+
+    @@map("orders")
+}
+
+model OrderItem {
+    id        String  @id @default(auto()) @map("_id") @db.ObjectId
+    quantity  Int
+    size      String
+    color     String
+    orderId   String  @db.ObjectId
+    order     Order   @relation(fields: [orderId], references: [id])
+    productId String
+    product   Product @relation(fields: [productId], references: [id])
+
+    @@map("orderItems")
+}
+
+model Image {
+    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    productId String
+    product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+    url       String
+    createAt  DateTime @default(now())
+    updateAt  DateTime @updatedAt
+
+    @@index([productId])
+    @@map("images")
+}
