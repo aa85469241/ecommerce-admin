@@ -26,3 +26,5 @@ export async function GET(req: Request) {
         return new NextResponse('Internet error', { status: 500 })
     }
 }
+
+export const revalidate = 10;
