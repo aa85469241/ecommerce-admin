@@ -13,6 +13,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "./ui/dropdown-menu"
+import Link from "next/link";
 
 interface UserMenuProps {
     currentUser: User | null;
@@ -52,12 +53,10 @@ const UserMenu: React.FC<UserMenuProps> = ({ currentUser }) => {
                 <DropdownMenuContent align="end">
                     <DropdownMenuGroup>
                         <DropdownMenuItem>
-                            <FiUser className="mr-2" />
-                            <span>About</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <FiSettings className="mr-2" />
-                            <span>Settings</span>
+                            <Link href="/settings" className="w-full flex items-center">
+                                <FiSettings className="mr-2" />
+                                <span>Settings</span>
+                            </Link>
                         </DropdownMenuItem>
                     </DropdownMenuGroup>
                     <DropdownMenuSeparator />
