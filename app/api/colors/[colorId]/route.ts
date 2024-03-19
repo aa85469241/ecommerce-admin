@@ -4,7 +4,7 @@ import prisma from "@/lib/prismadb";
 
 export async function GET(
     req: Request,
-    params: { colorId: string }
+    { params }: { params: { colorId: string } }
 ) {
     try {
         if (!params.colorId) {

@@ -4,7 +4,7 @@ import prisma from "@/lib/prismadb";
 
 export async function GET(
     req: Request,
-    params: { sizeId: string }
+    { params }: { params: { sizeId: string } }
 ) {
     try {
         if (!params.sizeId) {
